@@ -1,0 +1,142 @@
+###
+# (C) Copyright (2012-2017) Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+###
+---
+- name: edit kubeadm-init-v1.7.x.yaml
+  copy:
+    dest: /tmp/kubernetes/config/kubeadm-init-v1.7.x.yaml
+    content: |
+              apiVersion: kubeadm.k8s.io/v1alpha1
+              kind: MasterConfiguration
+              kubernetesVersion: v{{ KUBERNETES_VERSION }}
+              networking:
+                podSubnet: 10.244.0.0/16
+              apiServerCertSANs:
+              - {{ master1_hostname }}
+              - {{ master2_hostname }}
+              - {{ master3_hostname }}
+              - {{ master1_ip }}
+              - {{ master2_ip }}
+              - {{ master3_ip }}
+              - {{ virtual_ip }}
+              etcd:
+                endpoints:
+                - http://{{ master1_ip }}:2379
+                - http://{{ master2_ip }}:2379
+                - http://{{ master3_ip }}:2379
+
+- name: use kubeadm to init kubernetes cluster and connect external etcd cluster
+  shell: kubeadm init --config=/tmp/kubernetes/config/kubeadm-init-v1.7.x.yaml
+
+- pause: seconds=5
+
+- file: path=~/.kube state=directory
+
+- shell: echo "y" | cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+- shell: whoami && groups
+  register: user_details
+
+- file: path=~/.kube/config owner={{ user_details.stdout_lines[0] }} group={{ user_details.stdout_lines[1] }}
+
+- name: edit kube-apiserver.yaml
+  replace:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '--admission-control=.*$'
+    replace: '--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds'
+
+- name: restart docker and kubelet
+  systemd:
+    name: '{{ item }}'
+    state: restarted
+    daemon_reload: yes
+  with_items:
+  - docker
+  - kubelet
+
+- name: update ~/.bashrc
+  lineinfile:
+    dest: ~/.bashrc
+    line: export KUBECONFIG=/etc/kubernetes/admin.conf
+    state: present
+
+- shell: source ~/.bashrc
+
+- pause: seconds=20
+
+
+- name: install flannel networks addon
+  shell: kubectl create -f /tmp/kubernetes/config/kube-flannel
+
+- pause: minutes=2
+
+- name: install dashboard webUI addon
+  shell: kubectl create -f /tmp/kubernetes/config/kube-dashboard/
+
+- pause: seconds=10
+
+- shell: kubectl proxy --address='0.0.0.0' &
+
+- pause: seconds=10
+- name: check whether dashboard has come up
+  shell: curl -L http://{{ master1_ip }}:30000
+
+- name: make master be able to schedule pods
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+
+- pause: seconds=5
+
+- name: install heapster addon, the performance monitor addon
+  shell: kubectl create -f /tmp/kubernetes/config/kube-heapster
+- pause: seconds=10
+- name: restart docker and kubelet
+  systemd:
+    name: '{{ item }}'
+    state: restarted
+  with_items:
+  - docker
+  - kubelet
+
+- pause: minutes=1
+
+#Fetch /etc/kubernetes from master-1 to /tmp/kubernetes
+- name: create kubernetes directory in /tmp of local machine
+  local_action: file path=/tmp/kubernetes/ state=directory
+
+- shell: (cd /etc/kubernetes/; find . -maxdepth 1 -type f) | cut -d'/' -f2
+  register: files_to_copy
+
+- name: fetch files from master-1 /etc/kubernetes/ to local directory /tmp/kubernetes/
+  fetch: src=/etc/kubernetes/{{ item }} dest=/tmp/kubernetes/ flat=yes
+  with_items: "{{ files_to_copy.stdout_lines }}"
+
+- shell: (cd /etc/kubernetes/manifests/; find . -maxdepth 1 -type f) | cut -d'/' -f2
+  register: files_to_copy
+
+- fetch: src=/etc/kubernetes/manifests/{{ item }} dest=/tmp/kubernetes/manifests/ flat=yes
+  with_items: "{{ files_to_copy.stdout_lines }}"
+
+- shell: (cd /etc/kubernetes/pki/; find . -maxdepth 1 -type f) | cut -d'/' -f2
+  register: files_to_copy
+
+- fetch: src=/etc/kubernetes/pki/{{ item }} dest=/tmp/kubernetes/pki/ flat=yes
+  with_items: "{{ files_to_copy.stdout_lines }}"
+

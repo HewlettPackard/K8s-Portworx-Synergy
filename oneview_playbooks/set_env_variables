@@ -1,0 +1,4 @@
+export ANSIBLE_LIBRARY=/root/hpe-synergy-portworx-kubernetes/oneview_playbooks/oneview-ansible/library
+export ANSIBLE_MODULE_UTILS=/root/hpe-synergy-portworx-kubernetes/oneview_playbooks/oneview-ansible/library/module_utils
+
+

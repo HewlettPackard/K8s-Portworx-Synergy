@@ -1,0 +1,48 @@
+###
+# (C) Copyright (2012-2017) Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+###
+---
+master1_ip: 10.60.70.221
+master2_ip: 10.60.70.222
+master3_ip: 10.60.70.223
+
+master1_hostname: master-1.cloudra.local
+master2_hostname: master-2.cloudra.local
+master3_hostname: master-3.cloudra.local
+
+#Virual IP for keepalived
+virtual_ip: 10.60.70.220
+#Interface name for virtual IP
+virtual_ip_ifname: ens192
+
+#Uncomment the block below if you are using proxy
+#http_proxy: <your-proxy>:<port>
+#no_proxy: localhost,127.0.0.1,10.60.70.221,10.60.70.222,10.60.70.223
+
+#NTP server IP
+ntp_server: 10.60.1.123
+#Requirements for configuration
+OS_VERSION: 7.3
+DOCKER_EE_URL: <DOCKER-EE-URL>
+DOCKER_VERSION_STRING: 17.06.2.ee.4-1.el7.rhel
+KUBERNETES_VERSION: 1.7.4
+#New etcd cluster token.
+ETCD_CLUSTER_TOKEN: kube-cluster-02-11-2017
