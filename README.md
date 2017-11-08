@@ -1,4 +1,4 @@
-# Deploying stateful pods with portworx on HPE Synergy
+# Deploying kubernetes stateful pods with portworx on HPE Synergy
 This repo helps in 
 - automating kubernetes master HA cluster deployment,
 - automating worker nodes provisioning using HPE Synergy OneView
