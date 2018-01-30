@@ -55,6 +55,8 @@ Automation orchestration is done using ansible
 - Step 2: (Optional) Keep snapshots of all 3 masters , If anything goes wrong during kubernetes cluster configuration you can revert it back.
     
 - Step 3: cd kubernetes_portworx/ .Edit the file **vars/variables.yml** with respective values.
+	For creating custom kubernetes token update KUBERNETES_JOIN_TOKEN specified in variables.yml ( to set no expiry for token. K8s default token expirey time is 24 hr). Follow the below link to create your own token and update it.
+	https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/ 
 
 - Step 4: RUN this for configuring kubernetes HA cluster
 
