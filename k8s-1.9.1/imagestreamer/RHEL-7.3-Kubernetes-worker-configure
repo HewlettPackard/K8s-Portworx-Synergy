@@ -1,0 +1,68 @@
+# (c) Copyright 2017 Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+
+#
+# Kubernetes-worker-configure
+#
+#  Create the bootstrap script for a worker node
+#  this script will be called by onetime systemctl service at firstboot
+#
+
+# upload configuration script
+echo "create configuration script bootstrap.sh"
+-mkdir-p  /root/bootstrap
+upload -<<END /root/bootstrap/bootstrap.sh
+#!/bin/bash
+
+#
+#  this is a boot strap script for RHEL systems running under
+#  Synergy Image Streamer devices.
+#
+
+set -e
+
+# trap all errors and give us a stack dump of the calls
+trap 'r=$?; echo -e "$r : ${ERROR_COLOR}aborting script${DFL_COLOR}"; fl=${#FUNCNAME[]}; for (( i=0; i<$fl+1; i++));do echo -e "${WARN_COLOR}DUMP STACK IN${DFL_COLOR} ${FUNCNAME[$i]}:script( ${BASH_SOURCE[$i]} ) : line ( ${BASH_LINENO[$i]} ) -> $LINENO "; done; exit $r; ' ERR
+
+#
+# setup logging
+BOOT_SCRIPTS_DIR=${BOOT_SCRIPTS_DIR:-/root/bootstrap}
+if [ ! -f "$BOOT_SCRIPTS_DIR/logging.sh" ]; then
+  echo "Unable to find logging.sh in -> $BOOT_SCRIPTS_DIR"
+  echo "likely you do not have BOOT_SCRIPTS_DIR configured correctly.  Please set it correctly and try again."
+  echo "If you are testing try setting DO_TEST=true or run make test."
+  exit 1
+else
+  if [ -f $BOOT_SCRIPTS_DIR/bootstrap.log ]; then
+    rm $BOOT_SCRIPTS_DIR/bootstrap.log
+  fi
+  . "$BOOT_SCRIPTS_DIR/logging.sh"
+fi
+
+SCRIPTENTRY
+
+function join_kubemaster {
+
+    INFO "----- Joining kubernetes cluster as worker -----"
+       
+    setenforce 0
+	swapoff -a	
+	echo "swapoff -a" >> /etc/rc.local
+	kubeadm join --token @ClusterJoinToken@ --discovery-token-unsafe-skip-ca-verification @ClusterIP@:@ClusterPort:8443@ 
+
+}
+
+join_kubemaster
+
+SCRIPTEXIT
+END
+
+chmod 750 /root/bootstrap/bootstrap.sh
