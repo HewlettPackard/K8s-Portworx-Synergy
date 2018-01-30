@@ -1,0 +1,9 @@
+{
+  "ip": "10.60.150.10",
+  "credentials": {
+    "userName": "Administrator",
+    "password": "hpent123"
+  },
+"api_version": 500,
+"os_custom_attribute_password" : "password"
+}

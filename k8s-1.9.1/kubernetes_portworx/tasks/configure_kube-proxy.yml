@@ -1,0 +1,93 @@
+###
+# (C) Copyright (2012-2017) Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+###
+---
+#Followed alternative way for kubectl patch
+- name: configure configmap/kube-proxy
+  block:
+  - name: get configmap/kube-proxy to a file
+    shell: kubectl get -o yaml -n kube-system configmap/kube-proxy > /tmp/kubernetes/kube-proxy.yaml
+
+  - name: delete configmapi/kube-proxy
+    shell: kubectl delete -f /tmp/kubernetes/kube-proxy.yaml
+
+  - name: edit /tmp/kubernetes/kube-proxy.yaml
+    replace:
+      path: /tmp/kubernetes/kube-proxy.yaml
+      regexp: 'server: .*$'
+      replace: 'server: https://{{ virtual_ip }}:8443'
+
+  - name: create configmap/kube-proxy
+    shell: kubectl apply -f /tmp/kubernetes/kube-proxy.yaml
+
+  - name: get all proxy pods to delete
+    shell: kubectl get pods --all-namespaces | grep proxy | cut -d ' ' -f4
+    register: proxy_pods_to_delete
+
+  - name: delete proxy pods , kubelet will create them again automatically
+    shell: kubectl --namespace=kube-system delete pod "{{ item }}"
+    with_items: "{{ proxy_pods_to_delete.stdout_lines }}"
+  when: inventory_hostname in groups['master-1']
+
+- name: restart docker, kubelet and keepalived
+  systemd:
+    name: '{{ item }}'
+    state: restarted
+  with_items:
+  - docker
+  - kubelet
+  - keepalived
+
+- pause: seconds=30
+
+- name: make master nodes scheduling pods disabled
+  shell: kubectl patch node "{{ item }}" -p '{"spec":{"unschedulable":true}}'
+  with_items:
+  - "{{ master1_hostname }}"
+  - "{{ master2_hostname }}"
+  - "{{ master3_hostname }}"
+  when: inventory_hostname in groups['master-1']
+
+- name: create user-defined cluster join token
+  shell: kubeadm token create "{{ KUBERNETES_JOIN_TOKEN }}" --ttl 0
+
+#- name: Cluster data
+#  block:
+#  - name: get token
+#    shell: kubeadm token list | cut -d ' ' -f1
+#    register: token_list
+
+  - name: save cluster data
+    local_action: ini_file path=data/cluster_data.ini section=cluster_data option={{ item.name }} value={{ item.value }}
+    with_items:
+    - { name: 'CLUSTER_IP' , value: "{{ virtual_ip }}" }
+    - { name: 'CLUSTER_PORT' , value: '8443' }
+    - { name: 'CLUSTER_TOKEN' , value: "{{ KUBERNETES_JOIN_TOKEN }}"
+
+  - name: Print cluster data
+    debug:
+      msg:
+      - " CLUSTER_IP = {{ virtual_ip }} "
+      - " CLUSTER_PORT = 8443 "
+      - " CLUSTER_JOIN_TOKEN = {{ KUBERNETES_JOIN_TOKEN }}"
+
+  when: inventory_hostname in groups['master-1']
+

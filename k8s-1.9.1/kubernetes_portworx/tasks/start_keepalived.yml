@@ -1,0 +1,128 @@
+###
+# (C) Copyright (2012-2017) Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+###
+---
+- name: install keepalived
+  yum: name=keepalived state=installed
+
+- name: create apiserver monitoring script, when apiserver is down keepalived will stop and virtual IP address will transfer to the other node
+  copy:
+    content: |
+              #!/bin/bash
+              err=0
+              for k in $( seq 1 10 )
+              do
+                  check_code=$(ps -ef|grep kube-apiserver | wc -l)
+                  if [ "$check_code" = "1" ]; then
+                      err=$(expr $err + 1)
+                      sleep 5
+                      continue
+                  else
+                      err=0
+                      break
+                  fi
+              done
+              if [ "$err" != "0" ]; then
+                  echo "systemctl stop keepalived"
+                  /usr/bin/systemctl stop keepalived
+                  exit 1
+              else
+                  exit 0
+              fi
+    dest: /etc/keepalived/check_apiserver.sh
+    mode: a+x
+
+- name: edit keepalived settings on master-1
+  copy:
+    content: |
+              ! Configuration File for keepalived
+              global_defs {
+                  router_id LVS_DEVEL
+              }
+              vrrp_script chk_apiserver {
+                  script "/etc/keepalived/check_apiserver.sh"
+                  interval 2
+                  weight -5
+                  fall 3
+                  rise 2
+              }
+              vrrp_instance VI_1 {
+                  state  MASTER
+                  interface {{ virtual_ip_ifname }}
+                  mcast_src_ip {{ ansible_default_ipv4.address }}
+                  virtual_router_id 51
+                  priority 102
+                  advert_int 2
+                  authentication {
+                      auth_type PASS
+                      auth_pass 4be37dc3b4c90194d1600c483e10ad1d
+                  }
+                  virtual_ipaddress {
+                      {{ virtual_ip }}
+                  }
+                  track_script {
+                     chk_apiserver
+                  }
+              }
+    dest: /etc/keepalived/keepalived.conf
+  when: inventory_hostname in groups['master-1']
+
+- name: edit keepalived settings on master-2 and master-3
+  copy:
+    content: |
+              ! Configuration File for keepalived
+              global_defs {
+                  router_id LVS_DEVEL
+              }
+              vrrp_script chk_apiserver {
+                  script "/etc/keepalived/check_apiserver.sh"
+                  interval 2
+                  weight -5
+                  fall 3
+                  rise 2
+              }
+              vrrp_instance VI_1 {
+                  state  BACKUP
+                  interface {{ virtual_ip_ifname }}
+                  mcast_src_ip {{ ansible_default_ipv4.address }}
+                  virtual_router_id 51
+                  priority 102
+                  advert_int 2
+                  authentication {
+                      auth_type PASS
+                      auth_pass 4be37dc3b4c90194d1600c483e10ad1d
+                  }
+                  virtual_ipaddress {
+                      {{ virtual_ip }}
+                  }
+                  track_script {
+                     chk_apiserver
+                  }
+              }
+    dest: /etc/keepalived/keepalived.conf
+  when: inventory_hostname not in groups['master-1']
+
+- name: start keepalived
+  systemd:
+    name: keepalived
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

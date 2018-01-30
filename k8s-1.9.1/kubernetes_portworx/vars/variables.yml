@@ -1,0 +1,49 @@
+###
+# (C) Copyright (2012-2017) Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+###
+---
+master1_ip: 172.42.253.1
+master2_ip: 172.42.253.2
+master3_ip: 172.42.253.3
+
+master1_hostname: master-1.padc.local
+master2_hostname: master-2.padc.local
+master3_hostname: master-3.padc.local
+
+#Virual IP for keepalived
+virtual_ip: 172.42.253.4
+#Interface name for virtual IP
+virtual_ip_ifname: ens192
+
+#Uncomment the block below if you are using proxy
+http_proxy: web-proxy.corp.hpecorp.net:8080
+no_proxy: localhost,127.0.0.1,172.42.253.1,172.42.253.2,172.42.253.3,172.42.253.4
+
+#NTP server IP
+ntp_server: 172.42.253.4
+#Requirements for configuration
+OS_VERSION: 7.3
+DOCKER_EE_URL: https://storebits.docker.com/ee/m/sub-f7599337-5f19-4ecf-b00b-26309c6bcfa9
+DOCKER_VERSION_STRING: 17.06.2.ee.6-3.el7.rhel
+KUBERNETES_VERSION: 1.9.1
+KUBERNETES_JOIN_TOKEN: "e59947.b0c1f7596fe7a12d"
+#New etcd cluster token.
+ETCD_CLUSTER_TOKEN: kube-cluster-19-01-2018
