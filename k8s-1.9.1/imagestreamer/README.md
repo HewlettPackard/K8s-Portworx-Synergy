@@ -1,3 +1,10 @@
+## Change/replace below plan script in image streamer to support 1.9.1
+RHEL-7.3-Kubernetes-worker-configure
+
+above plan script will disable:
+ - swap
+ - skips ca verification ( while joining worker node. Optionally you can modify to pass ca cert hash )
+
 ## Steps to capture Golden image.
 - Step 1: Deploy Plane RHEL 7.3 OS on one of the HPE Synergy blade using respective Deployment plan.
 
@@ -25,6 +32,7 @@
 - Artifact bundle **RHEL-7.3-Kubernetes-Worker-2017-08-28.zip** has following fetature
 	1. Supports both individual NIC and NIC teaming configuration.
 	2. Configures proxy.
+	3. Include cluster IP in the custom attribute ProxyExclusionList ( you can specify list of IPs for noproxy )
 
 
 
