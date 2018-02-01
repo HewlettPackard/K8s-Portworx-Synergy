@@ -69,8 +69,8 @@
 - name: create user-defined cluster join token
   shell: kubeadm token create "{{ KUBERNETES_JOIN_TOKEN }}" --ttl 0
 
-#- name: Cluster data
-#  block:
+- name: Cluster data
+  block:
 #  - name: get token
 #    shell: kubeadm token list | cut -d ' ' -f1
 #    register: token_list
@@ -80,7 +80,7 @@
     with_items:
     - { name: 'CLUSTER_IP' , value: "{{ virtual_ip }}" }
     - { name: 'CLUSTER_PORT' , value: '8443' }
-    - { name: 'CLUSTER_TOKEN' , value: "{{ KUBERNETES_JOIN_TOKEN }}"
+    - { name: 'CLUSTER_TOKEN' , value: "{{ KUBERNETES_JOIN_TOKEN }}" }
 
   - name: Print cluster data
     debug:
