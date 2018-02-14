@@ -20,6 +20,14 @@
 # THE SOFTWARE.
 ###
 ---
+- name:  set all master nodes scheduable
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+  ignore_errors: true
+
+- name: calico scale to all master nodes
+  shell: kubectl scale --replicas=3 -n kube-system deployment/calico-kube-controllers
+- pause: seconds=5
+
 - name: scale up kube-dns replicas to 3, make all master running kube-dns
   shell: kubectl scale --replicas=3 -n kube-system deployment/kube-dns
 - pause: seconds=5
@@ -28,15 +36,3 @@
   shell: kubectl scale --replicas=3 -n kube-system deployment/kubernetes-dashboard
 - pause: seconds=5
 
-
-- name: scale up heapster replicas to 3, make all master running heapster
-  shell: kubectl scale --replicas=3 -n kube-system deployment/heapster
-- pause: seconds=5
-
-- name: scale up monitoring-grafana replicas to 3, make all master running monitoring-grafana
-  shell: kubectl scale --replicas=3 -n kube-system deployment/monitoring-grafana
-- pause: seconds=5
-
-- name: scale up monitoring-influxdb replicas to 3, make all master running monitoring-influxdb
-  shell: kubectl scale --replicas=3 -n kube-system deployment/monitoring-influxdb
-- pause: seconds=5

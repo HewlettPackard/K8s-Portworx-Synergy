@@ -20,13 +20,8 @@
 # THE SOFTWARE.
 ###
 ---
-- name: create kubeadm-init.conf on master-1
-  template:
-    src: "{{ playbook_dir }}/config/kubeadm-init.j2"
-    dest: "/tmp/kubernetes/config/kubeadm-init.yml"
-
-- name: kubeadm init on master-1
-  shell: kubeadm init --config=/tmp/kubernetes/config/kubeadm-init.yml
+- name: kubeadm init on master node
+  shell: kubeadm init --apiserver-advertise-address={{ master1_ip }}
 
 - name: update ~/.bashrc
   lineinfile:
@@ -48,24 +43,16 @@
 
 - pause: seconds=5
 
-- name: calico conf
-  template:
-    src: "{{ playbook_dir }}/config/kube-calico/calico.j2"
-    dest: "/tmp/kubernetes/config/kube-calico/calico.yml"
-
-- name: install calico addon
-  shell: kubectl create -f /tmp/kubernetes/config/kube-calico/
-
-- name: install dashboard webUI addon
-  shell: kubectl create -f /tmp/kubernetes/config/kube-dashboard/
-
+#- name: install dashboard webUI addon
+#  shell: kubectl create -f /tmp/kubernetes/config/kube-dashboard/
+- shell: kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
 - pause: minutes=1
 
 - shell: kubectl proxy --address='0.0.0.0' &
 
 - pause: seconds=10
-- name: check whether dashboard has come up
-  shell: curl -L http://{{ master1_ip }}:30000
+#- name: check whether dashboard has come up
+#  shell: curl -L http://{{ master1_ip }}:30000
 
 - name: install heapster addon, the performance monitor addon
   shell: kubectl create -f /tmp/kubernetes/config/kube-heapster/influxdb/
@@ -76,13 +63,19 @@
 
 - pause: minutes=2
 
-#Fetch /etc/kubernetes from master-1 to /tmp/kubernetes
-- name: create kubernetes directory in /tmp of local machine
-  local_action: file path=/tmp/kubernetes/ state=directory
+- name: create user-defined cluster join token
+  shell: kubeadm token create "{{ KUBERNETES_JOIN_TOKEN }}" --ttl 0
 
-- shell: (cd /etc/kubernetes/pki/; find . -maxdepth 1 -type f) | cut -d'/' -f2
-  register: files_to_copy
+- name: save cluster data
+  local_action: ini_file path=data/cluster_data.ini section=cluster_data option={{ item.name }} value={{ item.value }}
+  with_items:
+  - { name: 'CLUSTER_IP' , value: "{{ master1_ip }}" }
+  - { name: 'CLUSTER_PORT' , value: '6443' }
+  - { name: 'CLUSTER_TOKEN' , value: "{{ KUBERNETES_JOIN_TOKEN }}" }
 
-- fetch: src=/etc/kubernetes/pki/{{ item }} dest=/tmp/kubernetes/pki/ flat=yes
-  with_items: "{{ files_to_copy.stdout_lines }}"
-
+- name: Print cluster data
+  debug:
+    msg:
+    - " CLUSTER_IP = {{ master1_ip }} "
+    - " CLUSTER_PORT = 6443 "
+    - " CLUSTER_JOIN_TOKEN = {{ KUBERNETES_JOIN_TOKEN }}"

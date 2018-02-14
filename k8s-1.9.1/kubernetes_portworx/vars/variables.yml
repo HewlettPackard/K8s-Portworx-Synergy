@@ -20,30 +20,34 @@
 # THE SOFTWARE.
 ###
 ---
-master1_ip: 172.42.253.1
-master2_ip: 172.42.253.2
-master3_ip: 172.42.253.3
+master1_ip: 10.21.43.156
+master2_ip: 10.21.43.157
+master3_ip: 10.21.43.158
 
-master1_hostname: master-1.padc.local
-master2_hostname: master-2.padc.local
-master3_hostname: master-3.padc.local
+master1_hostname: master-1.hpe.local
+master2_hostname: master-2.hpe.local
+master3_hostname: master-3.hpe.local
 
 #Virual IP for keepalived
-virtual_ip: 172.42.253.4
+virtual_ip: 10.21.43.150
 #Interface name for virtual IP
 virtual_ip_ifname: ens192
 
 #Uncomment the block below if you are using proxy
-http_proxy: web-proxy.corp.hpecorp.net:8080
-no_proxy: localhost,127.0.0.1,172.42.253.1,172.42.253.2,172.42.253.3,172.42.253.4
+#http_proxy: <http_proxy>:<proxy_port>
+#no_proxy: localhost,127.0.0.1,10.21.43.156,10.21.43.157,10.21.43.158,10.21.43.150
 
 #NTP server IP
-ntp_server: 172.42.253.4
+ntp_server: 10.60.1.123
 #Requirements for configuration
-OS_VERSION: 7.3
+OS_VERSION: 7.4
 DOCKER_EE_URL: https://storebits.docker.com/ee/m/sub-f7599337-5f19-4ecf-b00b-26309c6bcfa9
 DOCKER_VERSION_STRING: 17.06.2.ee.6-3.el7.rhel
 KUBERNETES_VERSION: 1.9.1
 KUBERNETES_JOIN_TOKEN: "e59947.b0c1f7596fe7a12d"
+KUBERNETES_CIDR: 10.244.0.0/16
+# Any reachable IP , example gateway
+CALICO_REACHABLE_IP: 10.20.40.1
 #New etcd cluster token.
-ETCD_CLUSTER_TOKEN: kube-cluster-19-01-2018
+ETCD_CLUSTER_TOKEN: kube-cluster-13-02-2018
+

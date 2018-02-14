@@ -20,13 +20,19 @@
 # THE SOFTWARE.
 ###
 ---
-- set_fact:
-    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file=data/cluster_data.ini') }}" 
+- name: increase kube-apiserver counts
+  lineinfile:
+    insertafter: '- kube-apiserver'
+    line: "    - --apiserver-count=3"
+    path: "/etc/kubernetes/manifests/kube-apiserver.yaml"
 
-- name: join node to kubernetes cluster/master.
-  shell: kubeadm join --token {{ cluster_join_token }} --discovery-token-unsafe-skip-ca-verification {{ cluster_ip }}:{{ cluster_port }}
+- name: restart docker and kubelet
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    daemon_reload: yes
+  with_items:
+  - docker
+  - kubelet
 
-- pause: seconds=40
-
+- pause: seconds=30

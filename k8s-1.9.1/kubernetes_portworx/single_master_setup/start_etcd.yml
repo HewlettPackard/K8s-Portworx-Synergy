@@ -20,13 +20,28 @@
 # THE SOFTWARE.
 ###
 ---
-- set_fact:
-    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file=data/cluster_data.ini') }}" 
-
-- name: join node to kubernetes cluster/master.
-  shell: kubeadm join --token {{ cluster_join_token }} --discovery-token-unsafe-skip-ca-verification {{ cluster_ip }}:{{ cluster_port }}
-
-- pause: seconds=40
-
+- hosts: master-1
+  vars_files:
+  - vars/variables.yml
+  tasks:
+  - name: start docker etcd container on master
+    docker_container:
+      name: etcd
+      image: quay.io/coreos/etcd:v2.3.8
+      volumes:
+      - '/usr/share/ca-certificates/:/etc/ssl/certs'
+      ports:
+      - '4001:4001'
+      - '2384:2384'
+      - '2383:2383'
+      restart_policy: always
+      command:
+        - etcd
+        - --name=etcd0
+        - --advertise-client-urls=http://{{ master1_ip }}:2383,http://{{ master1_ip }}:4001
+        - --listen-client-urls=http://0.0.0.0:2383,http://0.0.0.0:4001
+        - --initial-advertise-peer-urls=http://{{ master1_ip }}:2384
+        - --listen-peer-urls=http://0.0.0.0:2384
+        - --initial-cluster-token=etcd-cluster-1
+        - --initial-cluster=etcd0=http://{{ master1_ip }}:2384
+        - --initial-cluster-state=new

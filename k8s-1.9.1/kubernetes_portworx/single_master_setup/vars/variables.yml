@@ -20,13 +20,21 @@
 # THE SOFTWARE.
 ###
 ---
-- set_fact:
-    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file=data/cluster_data.ini') }}" 
+master1_ip: 10.21.47.20
 
-- name: join node to kubernetes cluster/master.
-  shell: kubeadm join --token {{ cluster_join_token }} --discovery-token-unsafe-skip-ca-verification {{ cluster_ip }}:{{ cluster_port }}
+master1_hostname: kube-master-1.hpe.local
 
-- pause: seconds=40
+#Uncomment the block below if you are using proxy
+#http_proxy: <http_proxy>:<proxy_port>
+#no_proxy: localhost,127.0.0.1,10.21.43.156,10.21.43.157,10.21.43.158,10.21.43.150
+
+#NTP server IP
+#ntp_server: 10.60.1.123
+#Requirements for configuration
+OS_VERSION: 7.4
+DOCKER_EE_URL: https://storebits.docker.com/ee/m/sub-f7599337-5f19-4ecf-b00b-26309c6bcfa9
+DOCKER_VERSION_STRING: 17.06.2.ee.6-3.el7.rhel
+KUBERNETES_VERSION: 1.9.1
+KUBERNETES_JOIN_TOKEN: "e59948.b0c1f7596fe7a12e"
+KUBERNETES_CIDR: 10.244.0.0/16
 

@@ -22,11 +22,11 @@
 ---
 - hosts: unconfigured-worker-nodes
   vars_files:
-  - vars/variables.yml
+  - ../vars/variables.yml
   tasks:
-  - import_tasks: tasks/initial_setup.yml
-  - import_tasks: tasks/install_docker_ee.yml
-  - import_tasks: tasks/install_kubernetes.yml
+  - import_tasks: ../tasks/initial_setup.yml
+  - import_tasks: ../tasks/install_docker_ee.yml
+  - import_tasks: ../tasks/install_kubernetes.yml
 
   - name: install kernel-devel
     yum: name=kernel-devel state=installed

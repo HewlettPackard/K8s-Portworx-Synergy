@@ -39,13 +39,22 @@
 
 #Configure master-2
 - hosts: master-2
+  vars_files:
+  - vars/variables.yml
   tasks:
   - import_tasks: tasks/configure_master-2.yml
 
 #Configure master-3
 - hosts: master-3
+  vars_files:
+  - vars/variables.yml
   tasks:
   - import_tasks: tasks/configure_master-3.yml
+
+#Increase kube-apiserver counts
+- hosts: master-1:master-2:master-3
+  tasks:
+  - import_tasks: tasks/increase_kube-apiserver_count.yml
 
 #Scale addons
 - hosts: master-1
@@ -59,5 +68,11 @@
   tasks:
   - import_tasks: tasks/start_keepalived.yml
   - import_tasks: tasks/start_nginx_loadbalancer.yml
+
+#Configure kube-proxy
+- hosts: master-1
+  vars_files:
+  - vars/variables.yml
+  tasks:
   - import_tasks: tasks/configure_kube-proxy.yml
 

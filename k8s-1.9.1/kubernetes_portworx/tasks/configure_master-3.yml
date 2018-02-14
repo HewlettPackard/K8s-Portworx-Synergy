@@ -23,14 +23,13 @@
 - name: copy /tmp/kubernetes directory to master-3
   copy: src=/tmp/kubernetes/ dest=/etc/kubernetes/
 
-- name: delete local /tmp/kubernetes directory
-  local_action: file path=/tmp/kubernetes state=absent
+- name: create kubeadm-init.conf on master-3
+  template:
+    src: "{{ playbook_dir }}/config/kubeadm-init.j2"
+    dest: "/tmp/kubernetes/config/kubeadm-init.yml"
 
-- name: restart kubelet
-  systemd:
-    name: kubelet
-    state: restarted
-    daemon_reload: yes
+- name: kubeadm init on master-3
+  shell: kubeadm init --config=/tmp/kubernetes/config/kubeadm-init.yml
 
 - name: update ~/.bashrc
   lineinfile:
@@ -41,52 +40,3 @@
 - shell: source ~/.bashrc
 
 - pause: seconds=20
-
-- name: get nodes
-  shell: kubectl get nodes
-
-- name: edit /etc/kubernetes/manifests/kube-apiserver.yaml with respective host ip
-  replace:
-    path: /etc/kubernetes/manifests/kube-apiserver.yaml
-    regexp: '--advertise-address=.*'
-    replace: '--advertise-address={{ ansible_default_ipv4.address }}'
-
-- name: edit /etc/kubernetes/kubelet.conf with respective host ip
-  replace:
-    path: /etc/kubernetes/kubelet.conf
-    regexp: 'server: https:\/\/.*'
-    replace: 'server: https://{{ ansible_default_ipv4.address }}:6443'
-
-- name: edit /etc/kubernetes/admin.conf with respective host IP
-  replace:
-    path: /etc/kubernetes/admin.conf
-    regexp: 'server: https:\/\/.*'
-    replace: 'server: https://{{ ansible_default_ipv4.address }}:6443'
-
-- name: edit /etc/kubernetes/controller-manager.conf with respective host ip
-  replace:
-    path: /etc/kubernetes/controller-manager.conf
-    regexp: 'server: https:\/\/.*'
-    replace: 'server: https://{{ ansible_default_ipv4.address }}:6443'
-
-- name: edit /etc/kubernetes/scheduler.conf with respective host ip
-  replace:
-    path: /etc/kubernetes/scheduler.conf
-    regexp: 'server: https:\/\/.*'
-    replace: 'server: https://{{ ansible_default_ipv4.address }}:6443'
-
-- name: restart docker and kubelet
-  systemd:
-    name: "{{ item }}"
-    state: restarted
-    daemon_reload: yes
-  with_items:
-  - docker
-  - kubelet
-
-- pause: seconds=30
-
-#- name: get nodes
-#  shell: kubectl get nodes
-
-

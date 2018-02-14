@@ -20,13 +20,20 @@
 # THE SOFTWARE.
 ###
 ---
-- set_fact:
-    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file=data/cluster_data.ini') }}" 
-    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file=data/cluster_data.ini') }}" 
+- hosts: master-1
+  vars_files:
+  - vars/variables.yml
+  tasks:
+  - import_tasks: tasks/initial_setup.yml
+  - import_tasks: tasks/install_docker_ee.yml
+  - import_tasks: tasks/install_kubernetes.yml
+  - import_tasks: tasks/pull_required.yml
+  - import_tasks: tasks/configure_master.yml
 
-- name: join node to kubernetes cluster/master.
-  shell: kubeadm join --token {{ cluster_join_token }} --discovery-token-unsafe-skip-ca-verification {{ cluster_ip }}:{{ cluster_port }}
-
-- pause: seconds=40
+#Configure master
+- hosts: master-1
+  vars_files:
+  - "{{ playbook_dir }}/../vars/variables.yml"
+  tasks:
+  - import_tasks: tasks/configure_master.yml
 

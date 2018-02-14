@@ -1,0 +1,21 @@
+apiVersion: kubeadm.k8s.io/v1alpha1
+kind: MasterConfiguration
+kubernetesVersion: v{{ KUBERNETES_VERSION }}
+networking:
+  podSubnet: {{ KUBERNETES_CIDR }}
+apiServerCertSANs:
+- {{ master1_hostname }}
+- {{ master2_hostname }}
+- {{ master3_hostname }}
+- {{ master1_ip }}
+- {{ master2_ip }}
+- {{ master3_ip }}
+- {{ virtual_ip }}
+- 127.0.0.1
+etcd:
+  endpoints:
+  - http://{{ master1_ip }}:2379
+  - http://{{ master2_ip }}:2379
+  - http://{{ master3_ip }}:2379
+token: {{ KUBERNETES_JOIN_TOKEN }}
+tokenTTL: "0"

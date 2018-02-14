@@ -11,19 +11,25 @@ spec:
         task: monitoring
         k8s-app: grafana
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       containers:
       - name: grafana
-        image: gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+        image: gcr.io/google_containers/heapster-grafana-amd64:v4.4.3
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
           protocol: TCP
         volumeMounts:
+        - mountPath: /etc/ssl/certs
+          name: ca-certificates
+          readOnly: true
         - mountPath: /var
           name: grafana-storage
         env:
         - name: INFLUXDB_HOST
           value: monitoring-influxdb
-        - name: GRAFANA_PORT
+        - name: GF_SERVER_HTTP_PORT
           value: "3000"
           # The following env variables are required to make Grafana accessible via
           # the kubernetes api-server proxy. On production clusters, we recommend
@@ -37,9 +43,12 @@ spec:
           value: Admin
         - name: GF_SERVER_ROOT_URL
           # If you're only using the API Server proxy, set this value instead:
-          # value: /api/v1/proxy/namespaces/kube-system/services/monitoring-grafana/
+          # value: /api/v1/namespaces/kube-system/services/monitoring-grafana/proxy
           value: /
       volumes:
+      - name: ca-certificates
+        hostPath:
+          path: /etc/ssl/certs
       - name: grafana-storage
         emptyDir: {}
 ---
