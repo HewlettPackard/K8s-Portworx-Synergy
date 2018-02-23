@@ -31,9 +31,6 @@
     KUBERNETES_VERSION: 1.9.1
     
   tasks:
-  - name: install kernel-devel
-    yum: name=kernel-devel state=installed
-
   - name: get px-spec.yaml
     shell: curl -o px-spec.yaml "http://install.portworx.com?cluster=hpe-server-2&kvdb=etcd://{{ etcd_ip }}:{{ etcd_port }}&miface={{ portworx_iface }}&diface={{ portworx_iface }}&k8sVersion=v{{ KUBERNETES_VERSION }}"
   - name: deploy portworx

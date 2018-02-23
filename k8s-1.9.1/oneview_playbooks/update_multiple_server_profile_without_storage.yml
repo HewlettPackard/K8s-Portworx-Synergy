@@ -24,25 +24,21 @@
   connection: local
   vars:
     config: '{{ playbook_dir }}/oneview_config.json'
-    profile_numbers: 1
-    scope_name: "kubeworkergroup"
+    profile_numbers: 2
+    scope_name: "kubernetes-nodes"
 #network variables
-    management_network_name: "mgmt"
-    deployment_network_name: "deploy"
+    management_network_name: "VLAN21MGMT"
+    deployment_network_name: "I3SDeployment"
 #OS deployment plan variables
-    os_deployment_plan_name: "RHEL-7.3-Kubernetes-Worker-2017-08-28"
-#    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
-#    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
-#    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
-    cluster_ip: "172.42.253.4"
-    cluster_join_token: "e59947.b0c1f7596fe7a12d"
-    cluster_port: 8443
-    discovery_token_hash: "sha256:d9957f0125dc7fed1c1214d0005450ee28a4b0c67bde8f44b9db4e901071bebf"
+    os_deployment_plan_name: "RHEL-7.3-Kubernetes-Worker-2018-02-01"
+    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
+    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
+    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
     mgmt_NIC1_connection_id: "1"
-    mgmt_NIC1_dhcp: "false"
+    mgmt_NIC1_dhcp: "true"
     mgmt_NIC1_ipv4disable: "false"
-    mgmt_NIC1_networkuri: "/rest/ethernet-networks/9621b07e-d38b-46a9-8983-c36e0bb53726"
-    mgmt_NIC1_constraint: "auto"
+    mgmt_NIC1_networkuri: "/rest/ethernet-networks/65c2373c-2dfa-40a5-a140-f0ff10f2fe0d"
+    mgmt_NIC1_constraint: "dhcp"
 #    mgmt_NIC2_connection_id: "2"
 #    mgmt_NIC2_dhcp: "true"
 #    mgmt_NIC2_ipv4disable: "false"
@@ -52,16 +48,17 @@
     ntp_server: "10.60.1.123"
     root_password: "password"
     SSH: "Enabled"
+    Gateway: "10.21.40.1"
 
 
   tasks:
-
     - name: get server profile names
       delegate_to: localhost
-      shell: python ./update_profile.py {{ profile_numbers }} {{ scope_name }} 
+      # depending on the ov version, use the respective update_profile.py file
+      #shell: python ./update_profile.py {{ profile_numbers }} {{ scope_name }} 
+      shell: python ./update_profile_ov4.py {{ profile_numbers }} {{ scope_name }} 
       register: profile_response
     - debug: msg={{ profile_response.stdout }}
-
 
     - name : "Create Server Profiles"
       delegate_to: localhost
@@ -76,9 +73,10 @@
           wwnType: Virtual
 #          description: 'update server profile'
           affinity: Bay
+#          connectionSettings:
           connections:
           - id: 1
-            name: mgmt 
+            name: mgmt
             functionType: Ethernet
             portId: Auto
             requestedMbps: '2500'
@@ -86,16 +84,7 @@
             requestedVFs: '0'
             boot:
               priority: NotBootable
-#          - id: 2
-#            name: MGMT2
-#            functionType: Ethernet
-#            portId: Auto
-#            requestedMbps: '2500'
-#            networkName: "{{ management_network_name }}"
-#            requestedVFs: '0'
-#            boot:
-#              priority: NotBootable
-          - id: 2 
+          - id: 2
             name: Deployment_Network_A
             functionType: Ethernet
             portId: Mezz 3:1-a
@@ -115,26 +104,7 @@
                 initiatorName: ''
                 bootTargetName: ''
                 bootTargetLun: ''
-#          - id: 4
-#            name: Deployment_Network_B
-#            functionType: Ethernet
-#            portId: Mezz 3:2-a
-#            requestedMbps: '2500'
-#            networkName: "{{ deployment_network_name }}"
-#            requestedVFs: Auto
-#            ipv4:
-#              ipAddress: ''
-#            boot:
-#              priority: Secondary
-#              ethernetBootType: iSCSI
-#              iscsi:
-#                initiatorNameSource: 'ProfileInitiatorName'
-#                firstBootTargetIp: ''
-#                secondBootTargetIp: ''
-#                secondBootTargetPort: ''
-#                initiatorName: ''
-#                bootTargetName: ''
-#                bootTargetLun: ''
+
           osDeploymentSettings:
             osDeploymentPlanName: "{{ os_deployment_plan_name }}"
             forceOsDeployment: "true"
@@ -145,8 +115,8 @@
                  value: "{{ cluster_join_token }}"
               -  name: ClusterPort
                  value: "{{ cluster_port }}"
-              -  name: discoveryTokenHash
-                 value: "{{ discovery_token_hash }}"
+              -  name: Gateway
+                 value: "{{ Gateway }}"
               -  name: ManagementNIC1.connectionid
                  value: "1"
               -  name: ManagementNIC1.dhcp
@@ -157,24 +127,16 @@
                  value: "{{ mgmt_NIC1_networkuri }}"
               -  name: ManagementNIC1.constraint
                  value: "{{ mgmt_NIC1_constraint }}"
-#              -  name: Team0NIC2.connectionid
-#                 value: "2"
-#              -  name: Team0NIC2.dhcp
-#                 value: "{{ mgmt_NIC2_dhcp }}"
-#              -  name: Team0NIC2.ipv4disable
-#                 value: "{{ mgmt_NIC2_ipv4disable }}"
-#              -  name: Team0NIC2.networkuri
-#                 value: "{{ mgmt_NIC2_networkuri }}"
-#              -  name: Team0NIC2.constraint              
-#                 value: "{{ mgmt_NIC2_constraint }}"
               -  name: NtpServer
                  value: "{{ ntp_server }}"
               -  name: ServerFQDN
-                 value: "{{ item }}-Node.cloudra.local"
+                 value: "{{ item }}.hpe.com"
               -  name: SSH
                  value: "{{ SSH }}"
               -  name: NewRootPassword
                  value: "{{ root_password }}"
+              -  name: NicTeaming
+                 value: "No"
           boot:
             manageBoot: true
             order:
@@ -191,6 +153,7 @@
           localStorage:
              sasLogicalJBODs: []
              controllers: []
+             
       with_items:
       - "{{ profile_response.stdout }}"
       register: result
@@ -222,5 +185,5 @@
 
 
 #wait for all nodes to come online and copy ssh-keys
-- import_playbook: wait_for.yml
+#- import_playbook: wait_for.yml
      

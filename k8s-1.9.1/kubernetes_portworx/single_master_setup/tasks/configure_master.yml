@@ -45,12 +45,12 @@
 
 #- name: install dashboard webUI addon
 #  shell: kubectl create -f /tmp/kubernetes/config/kube-dashboard/
-- shell: kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
-- pause: minutes=1
-
-- shell: kubectl proxy --address='0.0.0.0' &
-
-- pause: seconds=10
+##- shell: kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+#- pause: minutes=1
+#
+#- shell: kubectl proxy --address='0.0.0.0' &
+#
+#- pause: seconds=10
 #- name: check whether dashboard has come up
 #  shell: curl -L http://{{ master1_ip }}:30000
 

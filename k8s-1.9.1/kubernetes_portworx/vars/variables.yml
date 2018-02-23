@@ -20,16 +20,16 @@
 # THE SOFTWARE.
 ###
 ---
-master1_ip: 10.21.43.156
-master2_ip: 10.21.43.157
-master3_ip: 10.21.43.158
+master1_ip: 10.21.47.20
+master2_ip: 10.21.47.25
+master3_ip: 10.21.47.24
 
-master1_hostname: master-1.hpe.local
-master2_hostname: master-2.hpe.local
-master3_hostname: master-3.hpe.local
+master1_hostname: kube-master-1.hpe.com
+master2_hostname: kube-master-2.hpe.com
+master3_hostname: kube-master-3.hpe.com
 
 #Virual IP for keepalived
-virtual_ip: 10.21.43.150
+virtual_ip: 10.21.47.13
 #Interface name for virtual IP
 virtual_ip_ifname: ens192
 
@@ -44,10 +44,10 @@ OS_VERSION: 7.4
 DOCKER_EE_URL: https://storebits.docker.com/ee/m/sub-f7599337-5f19-4ecf-b00b-26309c6bcfa9
 DOCKER_VERSION_STRING: 17.06.2.ee.6-3.el7.rhel
 KUBERNETES_VERSION: 1.9.1
-KUBERNETES_JOIN_TOKEN: "e59947.b0c1f7596fe7a12d"
+KUBERNETES_JOIN_TOKEN: "e59948.b0c1f7596fe7a12e"
 KUBERNETES_CIDR: 10.244.0.0/16
 # Any reachable IP , example gateway
 CALICO_REACHABLE_IP: 10.20.40.1
 #New etcd cluster token.
-ETCD_CLUSTER_TOKEN: kube-cluster-13-02-2018
+ETCD_CLUSTER_TOKEN: kube-cluster-14-03-2018
 

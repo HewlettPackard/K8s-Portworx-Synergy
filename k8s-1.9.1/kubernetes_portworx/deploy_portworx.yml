@@ -22,9 +22,9 @@
 ---
 - hosts: master-1
   vars:
-    etcd1_ip: 10.21.43.156
-    etcd2_ip: 10.21.43.157
-    etcd3_ip: 10.21.43.158
+    etcd1_ip: 10.21.47.20
+    etcd2_ip: 10.21.47.25
+    etcd3_ip: 10.21.47.24
     etcd_port: 2379
     #Provide interface name for portworx
     portworx_iface: ens3f1
@@ -34,7 +34,11 @@
     
   tasks:
   - name: get px-spec.yaml
-    shell: curl -o px-spec.yaml "http://install.portworx.com?cluster=hpe-server-2&kvdb=etcd://{{ etcd1_ip }}:{{ etcd_port }},etcd://{{ etcd2_ip }}:{{ etcd_port }},etcd://{{ etcd3_ip }}:{{ etcd_port }}&miface={{ portworx_iface }}&diface={{ portworx_iface }}&k8sVersion=v{{ KUBERNETES_VERSION }}"
+    shell: curl -o px-spec.yaml "http://install.portworx.com?cluster=hpe-cluster-1&kvdb=etcd://{{ etcd1_ip }}:{{ etcd_port }},etcd://{{ etcd2_ip }}:{{ etcd_port }},etcd://{{ etcd3_ip }}:{{ etcd_port }}&miface={{ portworx_iface }}&diface={{ portworx_iface }}&k8sVersion=v{{ KUBERNETES_VERSION }}"
+
+#Docker based
+#  - name: get px-spec.yml
+#    shell: kubectl apply -f 'https://install.portworx.com/?type=dock&c=hpe_cluster_3&k=etcd:http://10.21.47.20:2379%2Chttp://10.21.47.25:2379%2Chttp://10.21.47.24:2379&d=ens3f1&m=ens3f1&kbver=1.9.1&stork=true'
   - name: deploy portworx
     shell: kubectl apply -f px-spec.yaml
   - pause: minutes=2

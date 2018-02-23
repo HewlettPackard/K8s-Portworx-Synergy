@@ -1,3 +1,3 @@
-export ANSIBLE_LIBRARY=/root/oneview_ansible/oneview-ansible/library
-export ANSIBLE_MODULE_UTILS=/root/oneview_ansible/oneview-ansible/library/module_utils
+export ANSIBLE_LIBRARY=/root/oneview-ansible/library
+export ANSIBLE_MODULE_UTILS=/root/oneview-ansible/library/module_utils
 

@@ -1,8 +1,8 @@
 {
-  "ip": "172.42.0.10",
+  "ip": "10.21.45.1",
   "credentials": {
     "userName": "Administrator",
-    "password": "GSE#admin1"
+    "password": "Password1234"
   },
 "api_version": 500,
 "os_custom_attribute_password" : "password"

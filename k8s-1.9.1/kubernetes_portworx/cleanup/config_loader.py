@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ###
 # (C) Copyright (2012-2017) Hewlett Packard Enterprise Development LP
 #
@@ -19,30 +20,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 ###
----
-- hosts: unconfigured-worker-nodes
-  vars_files:
-  - ./../vars/variables.yml
-  tasks:
-  - import_tasks: ./../tasks/initial_setup.yml
-  - import_tasks: ./../tasks/install_docker_ee.yml
-  - import_tasks: ./../tasks/install_kubernetes.yml
 
-  - name: install kernel-devel
-    yum: name=kernel-devel state=installed
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-  - import_tasks: ./../tasks/join_worker_nodes.yml
+from future import standard_library
 
-  - name: deleting node(s) from ansible group unconfigured-worker-nodes
-    local_action: lineinfile path=/etc/ansible/hosts line={{ ansible_default_ipv4.address }} state=absent
+standard_library.install_aliases()
 
-  - name: make sure group [worker-nodes] exists in /etc/ansible/hosts
-    local_action: lineinfile path=/etc/ansible/hosts line="[worker-nodes]" state=present
+import json
+import os
 
-  - name: adding node(s) to ansible group worker-nodes
-    local_action:
-      module: lineinfile
-      path: /etc/ansible/hosts
-      insertafter: '^\[worker-nodes\]'
-      line: "{{ ansible_default_ipv4.address }}"
+CUR_MODULE_DIR = os.path.dirname(__file__)
+DEFAULT_EXAMPLE_CONFIG_FILE = os.path.join(CUR_MODULE_DIR, 'config.json')
 
+
+def try_load_from_file(config, file_name=None):
+    if not file_name:
+        file_name = DEFAULT_EXAMPLE_CONFIG_FILE
+
+    if not os.path.isfile(file_name):
+        return config
+
+    with open(file_name) as json_data:
+        return json.load(json_data)

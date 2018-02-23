@@ -31,13 +31,9 @@
     deployment_network_name: "deploy"
 #OS deployment plan variables    
     os_deployment_plan_name: "RHEL-7.3-Kubernetes-Worker-2018-01-30"
-#    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
-#    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
-#    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
-    cluster_ip: "172.42.253.4"
-    cluster_join_token: "e59947.b0c1f7596fe7a12d"
-    cluster_port: 8443
-#    discovery_token_hash: "sha256:d9957f0125dc7fed1c1214d0005450ee28a4b0c67bde8f44b9db4e901071bebf"
+    cluster_ip: "{{ lookup('ini', 'CLUSTER_IP section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
+    cluster_join_token: "{{ lookup('ini', 'CLUSTER_TOKEN section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
+    cluster_port: "{{ lookup('ini', 'CLUSTER_PORT section=cluster_data file={{ playbook_dir }}/../kubernetes_portworx/data/cluster_data.ini') }}"
     mgmt_NIC1_connection_id: "1"
     mgmt_NIC1_dhcp: "false"
     mgmt_NIC1_ipv4disable: "false"

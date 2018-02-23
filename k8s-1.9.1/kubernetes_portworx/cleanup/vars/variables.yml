@@ -1,0 +1,3 @@
+---
+hostnames_list: ['worker-1-bay-7.hpe.com']
+config: "./../../oneview_playbooks/oneview_config.json"
