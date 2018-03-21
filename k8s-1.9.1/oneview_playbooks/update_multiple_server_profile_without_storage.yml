@@ -24,7 +24,7 @@
   connection: local
   vars:
     config: '{{ playbook_dir }}/oneview_config.json'
-    profile_numbers: 2
+    profile_numbers: 1
     scope_name: "kubernetes-nodes"
 #network variables
     management_network_name: "VLAN21MGMT"
@@ -52,6 +52,18 @@
 
 
   tasks:
+    - name: validate resources
+      shell: python validate_resources.py "{{ config }}" "{{ scope_name }}" "{{ os_deployment_plan_name }}" "{{ deployment_network_name }}" "{{ management_network_name }}"
+      register: validation_results
+      ignore_errors: yes
+ 
+    - name: validation results
+      debug: msg={{ validation_results.stdout_lines }}
+
+    - fail: 
+        msg: "Aborting..., validation failed!"
+      when: validation_results.rc != 0
+
     - name: get server profile names
       delegate_to: localhost
       # depending on the ov version, use the respective update_profile.py file

@@ -54,7 +54,7 @@ Automation orchestration is done using ansible
     ```$ for ip in $IPlist;do ssh-copy-id -i ~/.ssh/id_rsa.pub root@$ip ; done```
 - Step 2: (Optional) Keep snapshots of all 3 masters , If anything goes wrong during kubernetes cluster configuration you can revert it back.
     
-- Step 3: cd kubernetes_portworx/ .Edit the file **vars/variables.yml** with respective values.
+- Step 3: Edit the file **./k8s-<version>/kubernetes_portworx/vars/variables.yml** with respective values.
 	For creating custom kubernetes token update KUBERNETES_JOIN_TOKEN specified in variables.yml ( to set no expiry for token. K8s default token expirey time is 24 hr). Follow the below link to create your own token and update it.
 	https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/ 
 
@@ -62,7 +62,9 @@ Automation orchestration is done using ansible
 
     Run boostrap_kubernetes_HA_master_nodes.yml using command below  
 	
-    ```$ ansible-playbook -v bootstrap_kubernetes_HA_master_nodes.yml```
+    ```	$ cd ./k8s-<version>/kubernetes_portworx/ ```
+	
+	``` $ ansible-playbook -v bootstrap_kubernetes_HA_master_nodes.yml```
 ## Steps to capture Golden Image.
 Follow steps from ([capture Golden Image](https://github.com/prakashmirji/hpe-synergy-portworx-kubernetes/blob/master/imagestreamer/README.md))
 ## Steps to configure portworx
@@ -73,6 +75,12 @@ Follow steps from ([capture Golden Image](https://github.com/prakashmirji/hpe-sy
   Step 3: Run the command below to deploy portworx.
 
     $ ansible-playbook -v deploy_portworx.yml
+
+## Validation of Synergy and Image streamer for resource availability 
+
+Run the script below with appropriate parameters to validate the resources availability (This is to validate resources before start deploying worker nodes)
+	
+	 $ python oneview_playbooks/validate_resources.py "<path_to_config>" "<scope_name>" "<dp_name>" "<deploy_network>" "<mgmt_network>" 
 
 ## Steps to join Synergy worker nodes to kubernetes cluster
 
@@ -94,7 +102,9 @@ Note: Design and scripts are tested with RHEL 7.3
 
 - Step 4: Run the following command to add all VM worker nodes to kubernetes cluster.
 
-	```$ ansible-playbook -v configure_worker_nodes.yml```
+	```	$ cd ./vm_worker_node/ ```
+	
+	```	$ ansible-playbook -v configure_worker_nodes.yml```
   
 ## high level testing commands
   ```
@@ -121,7 +131,10 @@ Note: Design and scripts are tested with RHEL 7.3
 
   View and monitor kubernetes resources at Dashboard at
   https:<cluster_ip>:30000
-
+## Clean-up master nodes
+  Revert to the snapshot taken before configuring cluster.
+## Clean-up worker nodes
+  refer this ([cleanup](https://github.com/prakashmirji/k8s-sy-px/blob/master/k8s-1.9.1/kubernetes_portworx/cleanup/README.md))
 ## Troubleshooting notes
 Few troubleshooting notes based on our testing
 - Disable the server secure boot option

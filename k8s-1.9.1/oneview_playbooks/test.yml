@@ -1,0 +1,12 @@
+---
+- hosts : localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - shell: python validate_resources.py
+    register: validation
+    ignore_errors: yes
+  - debug: msg={{ validation.stdout_lines }}
+    #failed_when: validation.rc != 0
+  - fail: msg="Aborting... , Validation failed!"
+    when: validation.rc != 0

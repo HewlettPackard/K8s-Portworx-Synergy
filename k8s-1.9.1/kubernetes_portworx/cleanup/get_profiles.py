@@ -38,7 +38,7 @@ config = {
 
 config_path =sys.argv[1]
 
-config = try_load_from_file(config,config_path)#"./../../oneview_playbooks/oneview_config.json")
+config = try_load_from_file(config,config_path)
 # Once you get updated oneview_ansible library for api_version 600 comment the line below
 config['api_version'] = 600
 oneview_client = OneViewClient(config)
@@ -46,14 +46,13 @@ oneview_client = OneViewClient(config)
 hostname_profile_dict = {}
 
 def get_hostname_profile_dict():
-#    server_response = oneview_client.server_hardware.get_all()
     server_profiles = oneview_client.server_profiles.get_all()
     scopes_profile_dict = {}
     
     for profile in server_profiles:
         if (profile['osDeploymentSettings']) is not None :
             for attribute in profile['osDeploymentSettings']['osCustomAttributes']:
-                if attribute['name'] == 'ServerFQDN':#hostname_list:#'worker-2.hpe.com':# hostname_list:
+                if attribute['name'] == 'ServerFQDN':
                     hostname_profile_dict[attribute['value']] = profile['name']
     print(hostname_profile_dict)
 
