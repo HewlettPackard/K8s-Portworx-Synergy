@@ -1,6 +1,17 @@
-# Deploying kubernetes stateful pods with portworx on HPE Synergy
-This repo helps in 
-- automating kubernetes master HA cluster deployment,
+# HPE Reference Configuration for Kubernetes, Portworx PX-Enterprise on HPE Synergy
+This Reference Configuration provides architectural guidance for deploying, scaling, and managing 
+stateful cloud-native applications with Kubernetes as a scale-out and efficient container orchestrator and Portworx PX-Enterprise edition as a cloud-native software-defined storage platform on HPE Synergy composable infrastructure. More 
+specifically, it shows how to:
+•  Deploy Container-as-a-Service (CaaS) and managed container functionality within IT organizations 
+using Kubernetes as the orchestration engine
+•  Run stateful workloads using Portworx PX-Enterprise as the cloud-native storage platform
+•  Automate deployment and scale of an integrated Portworx + Kubernetes platform leveraging HPE 
+Synergy strengths in rapid provisioning
+using HPE Synergy Image Streamer by orchestrating through Ansible.
+
+
+### This repo helps in deploying kubernetes stateful pods with portworx on HPE Synergy
+- automating setting up kubernetes master HA cluster,
 - automating worker nodes provisioning using HPE Synergy OneView
 - automating deploying stateful pods using portworx ( storage volume provider for kubernetes )
 
