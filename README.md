@@ -77,7 +77,7 @@ Automation orchestration is done using ansible
 	
 	``` $ ansible-playbook -v bootstrap_kubernetes_HA_master_nodes.yml```
 ## Steps to capture Golden Image.
-Follow steps from ([capture Golden Image](https://github.com/prakashmirji/hpe-synergy-portworx-kubernetes/blob/master/imagestreamer/README.md))
+Follow steps from ([capture Golden Image](https://github.com/HewlettPackard/K8s-Portworx-Synergy/blob/master/k8s-1.9.1/imagestreamer/README.md))
 ## Steps to configure portworx
   Step 1: Make sure that all worker node IPs present under **[worker-nodes]** group in **/etc/ansible/hosts file**.
 
@@ -95,7 +95,7 @@ Run the script below with appropriate parameters to validate the resources avail
 
 ## Steps to join Synergy worker nodes to kubernetes cluster
 
-  Follow steps from ([join Synergy worker nodes](https://github.com/prakashmirji/hpe-synergy-portworx-kubernetes/blob/master/oneview_playbooks/Readme.md))
+  Follow steps from ([join Synergy worker nodes](https://github.com/HewlettPackard/K8s-Portworx-Synergy/blob/master/k8s-1.9.1/oneview_playbooks/Readme.md))
   
 ## Steps to join VMs as worker nodes  : Commands mentioned in below steps needs to be executed from script VM.
 
@@ -145,7 +145,7 @@ Note: Design and scripts are tested with RHEL 7.3
 ## Clean-up master nodes
   Revert to the snapshot taken before configuring cluster.
 ## Clean-up worker nodes
-  refer this ([cleanup](https://github.com/prakashmirji/k8s-sy-px/blob/master/k8s-1.9.1/kubernetes_portworx/cleanup/README.md))
+  refer this ([cleanup](https://github.com/HewlettPackard/K8s-Portworx-Synergy/blob/master/k8s-1.9.1/kubernetes_portworx/cleanup/README.md))
 ## Troubleshooting notes
 Few troubleshooting notes based on our testing
 - Disable the server secure boot option
